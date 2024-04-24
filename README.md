@@ -2,6 +2,9 @@
 
 The MNIST dataset comprises 60,000 training and 10,000 testing handwritten digits, aiding various image processing systems. Each image, sized 28x28 pixels, was collected from Census Bureau employees and high school students, offering a rich resource for testing diverse methods.
 
+![Example Image](Pink Black Photocentric Neon Tech Talk Podcast Instagram Post.png)
+
+
 ## Setup:
 
 As with the last project, please use Python's NumPy numerical library for handling arrays and array operations; use matplotlib for producing figures and plots.
