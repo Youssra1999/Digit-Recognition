@@ -232,16 +232,18 @@ def get_PCA_representations(train_x, test_x, n_components=18):
 print(run_softmax_on_MNISTT(temp_parameter=1))
 #Test error using PCA representations: 0.14739999999999998
 
-# TODO: Use the plot_PC function in features.py to produce scatterplot
+#       Use the plot_PC function in features.py to produce scatterplot
 #       of the first 100 MNIST images, as represented in the space spanned by the
 #       first 2 principal components found above.
+
 plot_PC(train_x[range(000, 100), ], pcs, train_y[range(000, 100)], feature_means)#feature_means added since release
 
 
-# TODO: Use the reconstruct_PC function in features.py to show
+#       Use the reconstruct_PC function in features.py to show
 #       the first and second MNIST images as reconstructed solely from
 #       their 18-dimensional principal component representation.
 #       Compare the reconstructed images with the originals.
+
 firstimage_reconstructed = reconstruct_PC(train_pca[0, ], pcs, n_components, train_x, feature_means)#feature_means added since release
 plot_images(firstimage_reconstructed)
 plot_images(train_x[0, ])
@@ -255,14 +257,71 @@ plot_images(train_x[1, ])
 
 # Find the 10-dimensional PCA representation of the training and test set
 
+## PCA on Training Data with 10 Components ##
 
-# First fill out cubicFeatures() function in features.py as the below code requires it.
+n_components_10 = 10
 
-train_cube = cubic_features(train_pca10)
+# Center the training data
+train_x_centered_10, feature_means_10 = center_data(train_x)
+
+# Compute the principal components
+pcs_10 = principal_components(train_x_centered_10)
+
+# Project onto the first 10 principal components
+train_pca_10 = project_onto_PC(train_x, pcs_10, n_components_10, feature_means_10)
+test_pca10= project_onto_PC(train_x, pcs_10, n_components_10, feature_means_10) 
+
+
+train_cube = cubic_features(train_pca_10)
 test_cube = cubic_features(test_pca10)
+
 # train_cube (and test_cube) is a representation of our training (and test) data
 # after applying the cubic kernel feature mapping to the 10-dimensional PCA representations.
 
 
-# TODO: Train your softmax regression model using (train_cube, train_y)
+#       Train your softmax regression model using (train_cube, train_y)
 #       and evaluate its accuracy on (test_cube, test_y).
+
+def run_softmax_on_MNIST_with_cubic_kernel(temp_parameter=1):
+    """
+    Trains softmax, classifies test data, computes test error, and plots cost function
+    using cubic kernel features
+
+    Runs softmax_regression on the MNIST training set and computes the test error using
+    the test set. It uses the following values for parameters:
+    alpha = 0.3
+    lambda = 1e-4
+    num_iterations = 150
+
+    Saves the final theta to ./theta.pkl.gz
+
+    Returns:
+        Final test error
+    """
+    train_x, train_y, test_x, test_y = get_MNIST_data()
+    
+    # Use pre-computed PCA representations and feature means
+    train_pca, test_pca = get_PCA_representations(train_x, test_x)
+    
+    # Get cubic kernel features for PCA representations
+    train_cube = cubic_features(train_pca)
+    test_cube = cubic_features(test_pca)
+    
+    # Train softmax regression model using cubic kernel features
+    theta, cost_function_history = softmax_regression(train_cube, train_y, temp_parameter, alpha=0.3, lambda_factor=1.0e-4, k=10, num_iterations=150)
+    
+    # Plot cost function over time
+    plot_cost_function_over_time(cost_function_history)
+    
+    # Compute test error using cubic kernel features
+    test_error = compute_test_error(test_cube, test_y, theta, temp_parameter)
+    
+    # Save the model parameters theta obtained from calling softmax_regression to disk
+    write_pickle_data(theta, "./theta.pkl.gz")
+
+    # Print the test error
+    print("Test error using cubic kernel features:", test_error)
+    
+    return test_error
+
+print(run_softmax_on_MNIST_with_cubic_kernel(temp_parameter=1))
