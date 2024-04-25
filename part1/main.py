@@ -50,18 +50,24 @@ print('Linear Regression test_error =', run_linear_regression_on_MNIST(lambda_fa
 # 3. Support Vector Machine
 #######################################################################
 
-def one_vs_rest_svm (train_x, train_y, test_x):   
 
-    clf = LinearSVC(random_state=0, C=0.1)     
+def run_svm_one_vs_rest_on_MNIST():
+    """
+    Trains svm, classifies test data, computes test error on test set
 
-    clf.fit(train_x, train_y)      # Fit the model according to the given training data.
+    Returns:
+        Test error for the binary svm
+    """
+    train_x, train_y, test_x, test_y = get_MNIST_data()
+    train_y[train_y != 0] = 1
+    test_y[test_y != 0] = 1
+    pred_test_y = one_vs_rest_svm(train_x, train_y, test_x)
+    test_error = compute_test_error_svm(test_y, pred_test_y)
+    return test_error
 
-    pred_test_y = clf.predict(test_x)
 
-    return pred_test_y
-
-print('SVM one vs. rest test_error:', one_vs_rest_svm())
-
+print('SVM one vs. rest test_error:', run_svm_one_vs_rest_on_MNIST())
+#SVM one vs. rest test_error: 0.007499999999999951
 
 def run_multiclass_svm_on_MNIST():
     """
@@ -77,6 +83,10 @@ def run_multiclass_svm_on_MNIST():
 
 
 print('Multiclass SVM test_error:', run_multiclass_svm_on_MNIST())
+
+#C represents the tolerance of error. A larger C means we are punishing more on the classification error, thus being less tolerant to misclassifications. 
+#Therefore, we will get a smaller margin hyperplane.
+
 
 #######################################################################
 # 4. Multinomial (Softmax) Regression and Gradient Descent
