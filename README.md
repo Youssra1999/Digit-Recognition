@@ -33,3 +33,12 @@ This project will be split into two parts. Project 2 (this project) consists of 
    - `test_y`: The labels for the test data, which should only be used to evaluate the accuracy of different classifiers in your report.
 
 3. Next, we call the function `plot_images` to display the first 20 images of the training set. Look at these images and get a feel for the data (don't include these in your write-up).
+
+
+In this project, you have been familiarized with the MNIST dataset for digit recognition, a popular task in computer vision.
+
+You have implemented a linear regression which turned out to be inadequate for this task. You have also learned how to use scikit-learn's SVM for binary classification and multiclass classification.
+
+Then, you have implemented your own softmax regression using gradient descent.
+
+Finally, you experimented with different hyperparameters, different labels and different features, including kernelized features.

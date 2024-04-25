@@ -68,6 +68,8 @@ def run_svm_one_vs_rest_on_MNIST():
 
 print('SVM one vs. rest test_error:', run_svm_one_vs_rest_on_MNIST())
 #SVM one vs. rest test_error: 0.007499999999999951
+#C represents the tolerance of error. A larger C means we are punishing more on the classification error, thus being less tolerant to misclassifications. 
+#Therefore, we will get a smaller margin hyperplane.
 
 def run_multiclass_svm_on_MNIST():
     """
@@ -83,16 +85,12 @@ def run_multiclass_svm_on_MNIST():
 
 
 print('Multiclass SVM test_error:', run_multiclass_svm_on_MNIST())
-
-#C represents the tolerance of error. A larger C means we are punishing more on the classification error, thus being less tolerant to misclassifications. 
-#Therefore, we will get a smaller margin hyperplane.
+#Multiclass SVM test_error: 0.08189999999999997
 
 
 #######################################################################
 # 4. Multinomial (Softmax) Regression and Gradient Descent
 #######################################################################
-
-# TODO: first fill out functions in softmax.py, or run_softmax_on_MNIST will not work
 
 
 def run_softmax_on_MNIST(temp_parameter=1):
@@ -123,15 +121,18 @@ def run_softmax_on_MNIST(temp_parameter=1):
 
 
 print('softmax test_error=', run_softmax_on_MNIST(temp_parameter=1))
+#softmax test_error= 0.10050000000000003
 
-# TODO: Find the error rate for temp_parameter = [.5, 1.0, 2.0]
+
+# Find the error rate for temp_parameter = [.5, 1.0, 2.0]
 #      Remember to return the tempParameter to 1, and re-run run_softmax_on_MNIST
+# When the temp_parameter is higher the distribution of the output probabilities is uniform and their variance is high .
+
+
 
 #######################################################################
 # 6. Changing Labels
 #######################################################################
-
-
 
 def run_softmax_on_MNIST_mod3(temp_parameter=1):
     """
@@ -139,11 +140,28 @@ def run_softmax_on_MNIST_mod3(temp_parameter=1):
 
     See run_softmax_on_MNIST for more info.
     """
-    # YOUR CODE HERE
-    raise NotImplementedError
+    train_x, train_y, test_x, test_y = get_MNIST_data()
+    train_y, test_y =update_y(train_y, test_y)
+    theta, cost_function_history = softmax_regression(train_x, train_y, temp_parameter, alpha=0.3, lambda_factor=1.0e-4, k=10, num_iterations=150)
+    plot_cost_function_over_time(cost_function_history)
+    test_error = compute_test_error(test_x, test_y, theta, temp_parameter)
+    # Save the model parameters theta obtained from calling softmax_regression to disk.
+    write_pickle_data(theta, "./theta.pkl.gz")
+
+    return test_error
 
 
-# TODO: Run run_softmax_on_MNIST_mod3(), report the error rate
+# Run run_softmax_on_MNIST_mod3(), report the error rate
+print('softmax_labels_mod3 test_error=', run_softmax_on_MNIST_mod3(temp_parameter=1))
+#softmax_labels_mod3 test_error= 0.18720000000000003
+
+"""
+We are trying to find common features of all numbers that have the same mod 3 value, 
+however a lot of them look widely different, so it is harder to separate the data set 
+into 3 groups since, for example, 2 does not share many features with 5 or 8. 
+Therefore one would expect the performance to decrease, and this is what happens.
+
+"""
 
 
 #######################################################################
@@ -152,12 +170,8 @@ def run_softmax_on_MNIST_mod3(temp_parameter=1):
 
 ## Dimensionality reduction via PCA ##
 
-# TODO: First fill out the PCA functions in features.py as the below code depends on them.
-
-
 n_components = 18
 
-###Correction note:  the following 4 lines have been modified since release.
 train_x_centered, feature_means = center_data(train_x)
 pcs = principal_components(train_x_centered)
 train_pca = project_onto_PC(train_x, pcs, n_components, feature_means)
@@ -170,6 +184,53 @@ test_pca = project_onto_PC(test_x, pcs, n_components, feature_means)
 # TODO: Train your softmax regression model using (train_pca, train_y)
 #       and evaluate its accuracy on (test_pca, test_y).
 
+def run_softmax_on_MNISTT(temp_parameter=1):
+    """
+    Trains softmax, classifies test data, computes test error, and plots cost function
+
+    Runs softmax_regression on the MNIST training set and computes the test error using
+    the test set. It uses the following values for parameters:
+    alpha = 0.3
+    lambda = 1e-4
+    num_iterations = 150
+
+    Saves the final theta to ./theta.pkl.gz
+
+    Returns:
+        Final test error
+    """
+    train_x, train_y, test_x, test_y = get_MNIST_data()
+    
+    # Use pre-computed PCA representations and feature means
+    train_pca, test_pca = get_PCA_representations(train_x, test_x)
+    
+    # Train softmax regression model using PCA representations
+    theta, cost_function_history = softmax_regression(train_pca, train_y, temp_parameter, alpha=0.3, lambda_factor=1.0e-4, k=10, num_iterations=150)
+    
+    # Plot cost function over time
+    plot_cost_function_over_time(cost_function_history)
+    
+    # Compute test error using PCA representations
+    test_error = compute_test_error(test_pca, test_y, theta, temp_parameter)
+    
+    # Save the model parameters theta obtained from calling softmax_regression to disk
+    write_pickle_data(theta, "./theta.pkl.gz")
+
+    # Print the test error
+    print("Test error using PCA representations:", test_error)
+    
+    return test_error
+
+
+def get_PCA_representations(train_x, test_x, n_components=18):
+    train_x_centered, feature_means = center_data(train_x)
+    pcs = principal_components(train_x_centered)
+    train_pca = project_onto_PC(train_x, pcs, n_components, feature_means)
+    test_pca = project_onto_PC(test_x, pcs, n_components, feature_means)
+    return train_pca, test_pca
+
+print(run_softmax_on_MNISTT(temp_parameter=1))
+#Test error using PCA representations: 0.14739999999999998
 
 # TODO: Use the plot_PC function in features.py to produce scatterplot
 #       of the first 100 MNIST images, as represented in the space spanned by the
@@ -191,10 +252,11 @@ plot_images(train_x[1, ])
 
 
 ## Cubic Kernel ##
-# TODO: Find the 10-dimensional PCA representation of the training and test set
+
+# Find the 10-dimensional PCA representation of the training and test set
 
 
-# TODO: First fill out cubicFeatures() function in features.py as the below code requires it.
+# First fill out cubicFeatures() function in features.py as the below code requires it.
 
 train_cube = cubic_features(train_pca10)
 test_cube = cubic_features(test_pca10)
