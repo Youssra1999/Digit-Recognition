@@ -42,42 +42,25 @@ print('Linear Regression test_error =', run_linear_regression_on_MNIST(lambda_fa
 print('Linear Regression test_error =', run_linear_regression_on_MNIST(lambda_factor=0.01))
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+#No matter what  factor you try, the test error is very large 
+#The loss function related to the closed-form solution is inadequate for this problem.
 
 
 #######################################################################
 # 3. Support Vector Machine
 #######################################################################
 
+def one_vs_rest_svm (train_x, train_y, test_x):   
 
-def run_svm_one_vs_rest_on_MNIST():
-    """
-    Trains svm, classifies test data, computes test error on test set
+    clf = LinearSVC(random_state=0, C=0.1)     
 
-    Returns:
-        Test error for the binary svm
-    """
-    train_x, train_y, test_x, test_y = get_MNIST_data()
-    train_y[train_y != 0] = 1
-    test_y[test_y != 0] = 1
-    pred_test_y = one_vs_rest_svm(train_x, train_y, test_x)
-    test_error = compute_test_error_svm(test_y, pred_test_y)
-    return test_error
+    clf.fit(train_x, train_y)      # Fit the model according to the given training data.
 
+    pred_test_y = clf.predict(test_x)
 
-print('SVM one vs. rest test_error:', run_svm_one_vs_rest_on_MNIST())
+    return pred_test_y
+
+print('SVM one vs. rest test_error:', one_vs_rest_svm())
 
 
 def run_multiclass_svm_on_MNIST():
