@@ -12,7 +12,24 @@ sys.path.append("..")
 import utils
 from utils import *
 from train_utils import batchify_data, run_epoch, train_model, Flatten
+def get_MNIST_data():
+    """
+    Reads mnist dataset from file
 
+    Returns:
+        train_x - 2D Numpy array (n, d) where each row is an image
+        train_y - 1D Numpy array (n, ) where each row is a label
+        test_x  - 2D Numpy array (n, d) where each row is an image
+        test_y  - 1D Numpy array (n, ) where each row is a label
+
+    """
+    train_set, valid_set, test_set = read_pickle_data('./Datasets/mnist.pkl.gz')
+    train_x, train_y = train_set
+    valid_x, valid_y = valid_set
+    train_x = np.vstack((train_x, valid_x))
+    train_y = np.append(train_y, valid_y)
+    test_x, test_y = test_set
+    return (train_x, train_y, test_x, test_y)
 def main():
     # Load the dataset
     num_classes = 10
